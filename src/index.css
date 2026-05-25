@@ -345,7 +345,7 @@ th {
 }
 
 .geo-map-ocean {
-  fill: var(--map-empty);
+  fill: #121722;
 }
 
 .geo-country {
@@ -354,7 +354,7 @@ th {
 }
 
 .geo-country-active {
-  filter: drop-shadow(0 0 4px rgba(201, 162, 39, 0.25));
+  filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.45));
 }
 
 .geo-legend {

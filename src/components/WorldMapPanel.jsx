@@ -1,9 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { geoNaturalEarth1, geoPath } from 'd3-geo'
 
-const GEOJSON_URL = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json'
+const GEOJSON_URL = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson'
 const MAP_WIDTH = 960
 const MAP_HEIGHT = 500
+
+function getFeatureCode(feature) {
+  const code = feature.properties?.['ISO3166-1-Alpha-2']
+  if (!code || code === '-99') return null
+  return code
+}
+
+function getFeatureName(feature) {
+  return feature.properties?.name || null
+}
 
 function formatNumber(value) {
   return new Intl.NumberFormat().format(value || 0)
@@ -34,8 +44,8 @@ function getCountryLabel(code, fallbackName) {
 function getCountryFill(count, maxCount, isHovered) {
   if (!count) return 'var(--map-empty)'
   const intensity = maxCount > 0 ? count / maxCount : 0
-  const alpha = 0.18 + intensity * 0.82
-  if (isHovered) return `rgba(255, 208, 96, ${Math.min(alpha + 0.12, 1)})`
+  const alpha = 0.35 + intensity * 0.65
+  if (isHovered) return `rgba(255, 208, 96, ${Math.min(alpha + 0.1, 1)})`
   return `rgba(201, 162, 39, ${alpha})`
 }
 
@@ -115,11 +125,13 @@ export default function WorldMapPanel({ geoStats, loading }) {
                 >
                   <rect width={MAP_WIDTH} height={MAP_HEIGHT} className="geo-map-ocean" />
                   {world.features.map((feature) => {
-                    const code = feature.id
+                    const code = getFeatureCode(feature)
+                    if (!code) return null
+
                     const country = countByCode.get(code)
                     const count = country?.count || 0
                     const isHovered = hoveredCode === code
-                    const countryLabel = getCountryLabel(code, country?.name || feature.properties?.name)
+                    const countryLabel = getCountryLabel(code, country?.name || getFeatureName(feature))
 
                     return (
                       <path
@@ -127,8 +139,8 @@ export default function WorldMapPanel({ geoStats, loading }) {
                         d={pathGenerator(feature)}
                         className={`geo-country${count ? ' geo-country-active' : ''}${isHovered ? ' geo-country-hover' : ''}`}
                         fill={getCountryFill(count, maxCount, isHovered)}
-                        stroke={isHovered ? '#ffd060' : count ? 'rgba(201, 162, 39, 0.55)' : 'rgba(42, 49, 66, 0.9)'}
-                        strokeWidth={isHovered ? 1.4 : 0.6}
+                        stroke={isHovered ? '#ffd060' : count ? 'rgba(255, 208, 96, 0.85)' : 'rgba(60, 70, 92, 0.9)'}
+                        strokeWidth={isHovered ? 1.5 : count ? 1 : 0.5}
                         onMouseEnter={() => setHoveredCode(code)}
                         onMouseLeave={() => setHoveredCode(null)}
                       >
