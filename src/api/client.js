@@ -1,11 +1,11 @@
-const API_BASE = '/api/admin'
+import { adminApiUrl, parseJsonResponse } from './config'
 
 function getToken() {
   return localStorage.getItem('jyotish_admin_token')
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(adminApiUrl(path), {
     headers: {
       'Content-Type': 'application/json',
       ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
@@ -14,12 +14,13 @@ async function request(path, options = {}) {
     ...options,
   })
 
+  const data = await parseJsonResponse(response)
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.message || `Request failed (${response.status})`)
+    throw new Error(data.message || `Request failed (${response.status})`)
   }
 
-  return response.json()
+  return data
 }
 
 export function adminLogin(email, password) {
