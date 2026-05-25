@@ -223,8 +223,10 @@ th {
   padding: 24px;
 }
 
-.muted {
-  color: var(--muted);
+.device-agent {
+  word-break: break-word;
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .drawer-backdrop {

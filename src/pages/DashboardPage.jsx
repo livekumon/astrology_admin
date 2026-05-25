@@ -19,6 +19,21 @@ function formatDate(value) {
   return new Date(value).toLocaleString()
 }
 
+function formatDeviceType(value) {
+  if (!value) return '—'
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function formatLocation(location) {
+  if (!location || location.latitude == null || location.longitude == null) return '—'
+  return `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
+}
+
+function locationMapsUrl(location) {
+  if (!location || location.latitude == null || location.longitude == null) return null
+  return `https://www.google.com/maps?q=${location.latitude},${location.longitude}`
+}
+
 export default function DashboardPage() {
   const { admin, logout } = useAdminAuth()
   const [stats, setStats] = useState(null)
@@ -123,6 +138,8 @@ export default function DashboardPage() {
                   <tr>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Device</th>
+                    <th>Location</th>
                     <th>Registered</th>
                     <th>Conversations</th>
                     <th>Total tokens</th>
@@ -134,13 +151,15 @@ export default function DashboardPage() {
                 <tbody>
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="empty-cell">No users registered yet.</td>
+                      <td colSpan={10} className="empty-cell">No users registered yet.</td>
                     </tr>
                   )}
                   {users.map((user) => (
                     <tr key={String(user._id)}>
                       <td>{user.name}</td>
                       <td>{user.email}</td>
+                      <td>{formatDeviceType(user.deviceType)}</td>
+                      <td>{formatLocation(user.location)}</td>
                       <td>{formatDate(user.createdAt)}</td>
                       <td>{formatNumber(user.conversationCount)}</td>
                       <td>{formatNumber(user.tokenUsage?.totalTokens)}</td>
@@ -176,6 +195,37 @@ export default function DashboardPage() {
                   <h3>{userDetail.user.name}</h3>
                   <p className="muted">{userDetail.user.email}</p>
                   <p>Language: {userDetail.user.language || 'en'}</p>
+                  <p>Device: {formatDeviceType(userDetail.user.deviceType)}</p>
+                  <p>
+                    Location:{' '}
+                    {locationMapsUrl(userDetail.user.location) ? (
+                      <a
+                        href={locationMapsUrl(userDetail.user.location)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn-link"
+                      >
+                        {formatLocation(userDetail.user.location)}
+                      </a>
+                    ) : (
+                      '—'
+                    )}
+                  </p>
+                  {userDetail.user.location?.accuracy != null && (
+                    <p className="muted">Location accuracy: ±{Math.round(userDetail.user.location.accuracy)} m</p>
+                  )}
+                  {userDetail.user.deviceUpdatedAt && (
+                    <p className="muted">Device updated: {formatDate(userDetail.user.deviceUpdatedAt)}</p>
+                  )}
+                  {userDetail.user.location?.updatedAt && (
+                    <p className="muted">Location updated: {formatDate(userDetail.user.location.updatedAt)}</p>
+                  )}
+                  {userDetail.user.platform && (
+                    <p className="muted">Platform: {userDetail.user.platform}</p>
+                  )}
+                  {userDetail.user.userAgent && (
+                    <p className="muted device-agent">User agent: {userDetail.user.userAgent}</p>
+                  )}
                   <p>Registered: {formatDate(userDetail.user.createdAt)}</p>
                 </div>
 
