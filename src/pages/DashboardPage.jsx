@@ -6,6 +6,14 @@ function formatNumber(value) {
   return new Intl.NumberFormat().format(value || 0)
 }
 
+function formatInr(value) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 2,
+  }).format(value || 0)
+}
+
 function formatDate(value) {
   if (!value) return '—'
   return new Date(value).toLocaleString()
@@ -91,6 +99,12 @@ export default function DashboardPage() {
               <strong className="stat-value">{formatNumber(stats?.tokenUsage?.totalTokens)}</strong>
             </article>
             <article className="stat-card">
+              <span className="stat-label">Total cost (INR)</span>
+              <strong className="stat-value stat-value-cost">
+                {formatInr(stats?.tokenUsage?.cost?.costInr ?? stats?.tokenUsage?.costInr)}
+              </strong>
+            </article>
+            <article className="stat-card">
               <span className="stat-label">LLM requests</span>
               <strong className="stat-value">{formatNumber(stats?.tokenUsage?.requestCount)}</strong>
             </article>
@@ -112,6 +126,7 @@ export default function DashboardPage() {
                     <th>Registered</th>
                     <th>Conversations</th>
                     <th>Total tokens</th>
+                    <th>Cost (INR)</th>
                     <th>Requests</th>
                     <th />
                   </tr>
@@ -119,7 +134,7 @@ export default function DashboardPage() {
                 <tbody>
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="empty-cell">No users registered yet.</td>
+                      <td colSpan={8} className="empty-cell">No users registered yet.</td>
                     </tr>
                   )}
                   {users.map((user) => (
@@ -129,10 +144,11 @@ export default function DashboardPage() {
                       <td>{formatDate(user.createdAt)}</td>
                       <td>{formatNumber(user.conversationCount)}</td>
                       <td>{formatNumber(user.tokenUsage?.totalTokens)}</td>
+                      <td>{formatInr(user.tokenUsage?.cost?.costInr ?? user.tokenUsage?.costInr)}</td>
                       <td>{formatNumber(user.tokenUsage?.requestCount)}</td>
                       <td>
                         <button type="button" className="btn-link" onClick={() => openUser(user._id)}>
-                          View
+                          View More Details
                         </button>
                       </td>
                     </tr>
@@ -167,6 +183,7 @@ export default function DashboardPage() {
                   <h4>Token usage</h4>
                   <div className="mini-stats">
                     <span>Total: {formatNumber(userDetail.user.tokenUsage?.totalTokens)}</span>
+                    <span>Cost: {formatInr(userDetail.user.tokenUsage?.cost?.costInr ?? userDetail.user.tokenUsage?.costInr)}</span>
                     <span>Prompt: {formatNumber(userDetail.user.tokenUsage?.promptTokens)}</span>
                     <span>Output: {formatNumber(userDetail.user.tokenUsage?.outputTokens)}</span>
                     <span>Thinking: {formatNumber(userDetail.user.tokenUsage?.thinkingTokens)}</span>
@@ -176,7 +193,9 @@ export default function DashboardPage() {
                       {userDetail.tokenBreakdown.byTask.map((row) => (
                         <li key={row.task}>
                           <strong>{row.task}</strong>
-                          <span>{formatNumber(row.totalTokens)} tokens · {row.requestCount} req</span>
+                          <span>
+                            {formatNumber(row.totalTokens)} tokens · {formatInr(row.cost?.costInr ?? row.costInr)} · {row.requestCount} req
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -194,6 +213,9 @@ export default function DashboardPage() {
                         <strong>{conv.name}</strong>
                         <span>{conv.chartData?.system || 'Unknown tradition'}</span>
                         <span>{formatNumber(conv.messageCount)} exchanges</span>
+                        <span>
+                          {formatNumber(conv.tokenUsage?.totalTokens)} tokens · {formatInr(conv.tokenUsage?.cost?.costInr ?? conv.tokenUsage?.costInr)}
+                        </span>
                         <span className="muted">{formatDate(conv.updatedAt)}</span>
                       </li>
                     ))}
@@ -207,7 +229,9 @@ export default function DashboardPage() {
                       {userDetail.tokenBreakdown.recent.map((row) => (
                         <li key={String(row._id)}>
                           <span>{row.task} · {row.model}</span>
-                          <span>{formatNumber(row.totalTokens)} tokens</span>
+                          <span>
+                            {formatNumber(row.totalTokens)} tokens · {formatInr(row.cost?.costInr ?? row.costInr)}
+                          </span>
                           <span className="muted">{formatDate(row.createdAt)}</span>
                         </li>
                       ))}

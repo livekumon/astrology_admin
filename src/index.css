@@ -170,6 +170,10 @@ input {
   line-height: 1.1;
 }
 
+.stat-value-cost {
+  font-size: 1.35rem;
+}
+
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
