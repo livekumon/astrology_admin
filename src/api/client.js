@@ -38,6 +38,10 @@ export function fetchUsers() {
   return request('/users')
 }
 
+export function fetchGeoStats() {
+  return request('/geo-stats')
+}
+
 export function fetchUserDetail(userId) {
   return request(`/users/${userId}`)
 }

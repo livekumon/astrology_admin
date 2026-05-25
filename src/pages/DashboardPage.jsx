@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { fetchStats, fetchUserDetail, fetchUsers } from '../api/client'
+import { fetchGeoStats, fetchStats, fetchUserDetail, fetchUsers } from '../api/client'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
+import WorldMapPanel from '../components/WorldMapPanel'
 
 function formatNumber(value) {
   return new Intl.NumberFormat().format(value || 0)
@@ -25,7 +26,10 @@ function formatDeviceType(value) {
 }
 
 function formatLocation(location) {
-  if (!location || location.latitude == null || location.longitude == null) return '—'
+  if (!location) return '—'
+  if (location.region && location.country) return `${location.region}, ${location.country}`
+  if (location.country) return location.country
+  if (location.latitude == null || location.longitude == null) return '—'
   return `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
 }
 
@@ -38,24 +42,33 @@ export default function DashboardPage() {
   const { admin, logout } = useAdminAuth()
   const [stats, setStats] = useState(null)
   const [users, setUsers] = useState([])
+  const [geoStats, setGeoStats] = useState(null)
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [userDetail, setUserDetail] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [geoLoading, setGeoLoading] = useState(true)
   const [detailLoading, setDetailLoading] = useState(false)
   const [error, setError] = useState('')
 
   const loadDashboard = useCallback(async () => {
     setLoading(true)
+    setGeoLoading(true)
     setError('')
     try {
-      const [statsData, usersData] = await Promise.all([fetchStats(), fetchUsers()])
+      const [statsData, usersData, geoData] = await Promise.all([
+        fetchStats(),
+        fetchUsers(),
+        fetchGeoStats(),
+      ])
       setStats(statsData)
       setUsers(usersData.users || [])
+      setGeoStats(geoData)
     } catch (err) {
       setError(err.message || 'Failed to load dashboard')
       if (/auth|token|401|403/i.test(err.message)) logout()
     } finally {
       setLoading(false)
+      setGeoLoading(false)
     }
   }, [logout])
 
@@ -124,6 +137,8 @@ export default function DashboardPage() {
               <strong className="stat-value">{formatNumber(stats?.tokenUsage?.requestCount)}</strong>
             </article>
           </section>
+
+          <WorldMapPanel geoStats={geoStats} loading={geoLoading} />
 
           <section className="panel">
             <div className="panel-header">
