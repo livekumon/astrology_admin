@@ -9,6 +9,28 @@ function formatNumber(value) {
   return new Intl.NumberFormat().format(value || 0)
 }
 
+const regionNames = (() => {
+  try {
+    return new Intl.DisplayNames(['en'], { type: 'region' })
+  } catch {
+    return null
+  }
+})()
+
+function getCountryLabel(code, fallbackName) {
+  if (fallbackName) return fallbackName
+  if (!code) return 'Unknown'
+
+  const normalized = String(code).trim().toUpperCase()
+  if (!/^[A-Z]{2}$/.test(normalized)) return String(code)
+
+  try {
+    return regionNames?.of(normalized) || normalized
+  } catch {
+    return normalized
+  }
+}
+
 function getCountryFill(count, maxCount, isHovered) {
   if (!count) return 'var(--map-empty)'
   const intensity = maxCount > 0 ? count / maxCount : 0
@@ -48,7 +70,6 @@ export default function WorldMapPanel({ geoStats, loading }) {
   }, [geoStats])
 
   const maxCount = geoStats?.countries?.[0]?.count || 0
-  const regionNames = useMemo(() => new Intl.DisplayNames(['en'], { type: 'region' }), [])
 
   const projection = useMemo(() => {
     if (!world) return null
@@ -98,6 +119,7 @@ export default function WorldMapPanel({ geoStats, loading }) {
                     const country = countByCode.get(code)
                     const count = country?.count || 0
                     const isHovered = hoveredCode === code
+                    const countryLabel = getCountryLabel(code, country?.name || feature.properties?.name)
 
                     return (
                       <path
@@ -111,7 +133,7 @@ export default function WorldMapPanel({ geoStats, loading }) {
                         onMouseLeave={() => setHoveredCode(null)}
                       >
                         <title>
-                          {(country?.name || regionNames.of(code) || code) + (count ? `: ${count} users` : ': No users')}
+                          {countryLabel + (count ? `: ${count} users` : ': No users')}
                         </title>
                       </path>
                     )
@@ -131,7 +153,7 @@ export default function WorldMapPanel({ geoStats, loading }) {
 
           <aside className="geo-side">
             <div className="geo-side-card">
-              <h3>{activeCountry ? (activeCountry.name || regionNames.of(activeCountry.code) || activeCountry.code) : 'No location data yet'}</h3>
+              <h3>{activeCountry ? getCountryLabel(activeCountry.code, activeCountry.name) : 'No location data yet'}</h3>
               {activeCountry ? (
                 <>
                   <p className="geo-side-count">{formatNumber(activeCountry.count)} users</p>
@@ -158,7 +180,7 @@ export default function WorldMapPanel({ geoStats, loading }) {
                         onFocus={() => setHoveredCode(row.code)}
                         onBlur={() => setHoveredCode(null)}
                       >
-                        <span>{row.name || regionNames.of(row.code) || row.code}</span>
+                        <span>{getCountryLabel(row.code, row.name)}</span>
                         <strong>{formatNumber(row.count)}</strong>
                       </button>
                     </li>
@@ -178,7 +200,7 @@ export default function WorldMapPanel({ geoStats, loading }) {
                       <div className="geo-region-row">
                         <span>
                           {row.region}
-                          <em>{row.country || regionNames.of(row.countryCode) || row.countryCode}</em>
+                          <em>{row.country || getCountryLabel(row.countryCode)}</em>
                         </span>
                         <strong>{formatNumber(row.count)}</strong>
                       </div>
