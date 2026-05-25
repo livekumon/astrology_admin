@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
+import { DEFAULT_ADMIN_LOGIN, DEFAULT_ADMIN_PASSWORD } from '../constants/adminCredentials'
 
 export default function LoginPage() {
   const { login } = useAdminAuth()
-  const [email, setEmail] = useState('admin@jyotish.local')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState(DEFAULT_ADMIN_LOGIN)
+  const [password, setPassword] = useState(DEFAULT_ADMIN_PASSWORD)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -27,9 +28,9 @@ export default function LoginPage() {
         <div className="login-brand">✦ Jyotish Admin</div>
         <p className="login-sub">Sign in to view users, conversations, and token usage.</p>
         <label className="field">
-          <span>Email</span>
+          <span>Login</span>
           <input
-            type="email"
+            type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
