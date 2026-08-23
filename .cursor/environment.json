@@ -1,0 +1,16 @@
+{
+  "name": "Jyotish Admin",
+  "install": "npm ci",
+  "terminals": [
+    {
+      "name": "vite",
+      "command": "npm run dev"
+    }
+  ],
+  "ports": [
+    {
+      "port": 5175,
+      "name": "Vite dev server"
+    }
+  ]
+}
